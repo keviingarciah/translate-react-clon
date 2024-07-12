@@ -14,38 +14,46 @@ function reducer(state: State, action: Action) {
   const { type } = action;
 
   if (type === "INTERCHANGE_LANGUAGES") {
-    if (state.fromLanguage === AUTO_LANGUAGE) {
-      return state;
-    }
+    if (state.fromLanguage === AUTO_LANGUAGE) return state;
+    const loading = state.fromText !== "";
 
     return {
       ...state,
+      result: "",
+      loading,
+      fromText: state.resultText,
       fromLanguage: state.toLanguage,
       toLanguage: state.fromLanguage,
     };
   }
 
   if (type === "SET_FROM_LANGUAGE") {
+    if (state.fromLanguage === action.payload) return state;
     const loading = state.fromText !== "";
 
-    return { ...state, fromLanguage: action.payload, loading };
+    return { ...state, resultText: "", loading, fromLanguage: action.payload };
   }
 
   if (type === "SET_TO_LANGUAGE") {
-    return { ...state, toLanguage: action.payload };
+    if (state.toLanguage === action.payload) return state;
+    const loading = state.fromText !== "";
+
+    return { ...state, resultText: "", loading, toLanguage: action.payload };
   }
 
   if (type === "SET_FROM_TEXT") {
+    const loading = action.payload !== "";
+
     return {
       ...state,
-      loading: true,
-      fromText: action.payload,
       resultText: "",
+      loading,
+      fromText: action.payload,
     };
   }
 
   if (type === "SET_RESULT_TEXT") {
-    return { ...state, loading: true, resultText: action.payload };
+    return { ...state, loading: false, resultText: action.payload };
   }
 
   return state;

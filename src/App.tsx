@@ -1,7 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
-import { ArrowIcon } from "./components/Icons";
-import { AUTO_LANGUAGE } from "./constants";
+import { ArrowIcon, ClipBoardIcon, SpeakerIcon } from "./components/Icons";
+import { AUTO_LANGUAGE, VOICE_FOR_LANGUAGE } from "./constants";
 import { useStore } from "./hooks/useStore";
 
 import { Container, Row, Col, Button, Stack } from "react-bootstrap";
@@ -11,6 +11,7 @@ import { SectionType } from "./types.d";
 import { TextArea } from "./components/TextArea";
 import { useEffect } from "react";
 import { translateText } from "./services/translate";
+import { useDebounce } from "./hooks/useDebounce";
 
 function App() {
   const {
@@ -26,20 +27,33 @@ function App() {
     setResultText,
   } = useStore();
 
+  const debounceFromText = useDebounce(fromText, 500);
+
   useEffect(() => {
-    if (fromText === "") {
+    if (debounceFromText === "") {
       return;
     }
 
-    translateText({ fromLanguage, toLanguage, text: fromText })
+    translateText({ fromLanguage, toLanguage, text: debounceFromText })
       .then((result) => {
-        if (result == null) {
-          return;
-        }
+        if (result == null) return;
         setResultText(result);
       })
       .catch(() => setResultText("Error translating text"));
-  }, []);
+  }, [debounceFromText, fromLanguage, toLanguage]);
+
+  const handleClipboard = () => {
+    navigator.clipboard.writeText(resultText).catch((error) => {
+      console.error("Error al copiar al portapapeles:", error);
+    });
+  };
+
+  const handleSpeak = () => {
+    const utterance = new SpeechSynthesisUtterance(resultText);
+    utterance.lang = VOICE_FOR_LANGUAGE[toLanguage];
+    utterance.rate = 0.9;
+    speechSynthesis.speak(utterance);
+  };
 
   return (
     <Container fluid>
@@ -80,12 +94,29 @@ function App() {
               value={toLanguage}
               onChange={setToLanguage}
             />
-            <TextArea
-              type={SectionType.TO}
-              value={resultText}
-              onChange={setResultText}
-              loading={loading}
-            />
+            <div style={{ position: "relative" }}>
+              <TextArea
+                type={SectionType.TO}
+                value={resultText}
+                onChange={setResultText}
+                loading={loading}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  display: "flex",
+                }}
+              >
+                <Button variant="link" onClick={handleClipboard}>
+                  <ClipBoardIcon />
+                </Button>
+                <Button variant="link" onClick={handleSpeak}>
+                  <SpeakerIcon />
+                </Button>
+              </div>
+            </div>
           </Stack>
         </Col>
       </Row>
