@@ -26,7 +26,9 @@ function reducer(state: State, action: Action) {
   }
 
   if (type === "SET_FROM_LANGUAGE") {
-    return { ...state, fromLanguage: action.payload };
+    const loading = state.fromText !== "";
+
+    return { ...state, fromLanguage: action.payload, loading };
   }
 
   if (type === "SET_TO_LANGUAGE") {

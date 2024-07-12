@@ -4,11 +4,13 @@ import { ArrowIcon } from "./components/Icons";
 import { AUTO_LANGUAGE } from "./constants";
 import { useStore } from "./hooks/useStore";
 
-import { Container, Row, Col, Button, Form, Stack } from "react-bootstrap";
+import { Container, Row, Col, Button, Stack } from "react-bootstrap";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { SectionType } from "./types.d";
 
 import { TextArea } from "./components/TextArea";
+import { useEffect } from "react";
+import { translateText } from "./services/translate";
 
 function App() {
   const {
@@ -16,12 +18,28 @@ function App() {
     toLanguage,
     fromText,
     resultText,
+    loading,
     setFromLanguage,
     setToLanguage,
     interChangeLanguages,
     setFromText,
     setResultText,
   } = useStore();
+
+  useEffect(() => {
+    if (fromText === "") {
+      return;
+    }
+
+    translateText({ fromLanguage, toLanguage, text: fromText })
+      .then((result) => {
+        if (result == null) {
+          return;
+        }
+        setResultText(result);
+      })
+      .catch(() => setResultText("Error translating text"));
+  }, []);
 
   return (
     <Container fluid>
@@ -36,7 +54,6 @@ function App() {
               onChange={setFromLanguage}
             />
             <TextArea
-              placeholder="Introducir texto"
               type={SectionType.FROM}
               value={fromText}
               onChange={setFromText}
@@ -64,10 +81,10 @@ function App() {
               onChange={setToLanguage}
             />
             <TextArea
-              placeholder="Traducción"
               type={SectionType.TO}
               value={resultText}
               onChange={setResultText}
+              loading={loading}
             />
           </Stack>
         </Col>
