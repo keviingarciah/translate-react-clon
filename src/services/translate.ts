@@ -12,10 +12,6 @@ export async function translateText({
 }): Promise<string> {
   if (fromLanguage === toLanguage) return text;
 
-  const fromCode =
-    fromLanguage === "auto" ? "auto" : SUPPORTED_LANGUAGES[fromLanguage];
-  const toCode = SUPPORTED_LANGUAGES[toLanguage];
-
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLanguage}&tl=${toLanguage}&dt=t&q=${encodeURI(
     text
   )}`;

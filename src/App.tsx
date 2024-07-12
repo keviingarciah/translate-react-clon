@@ -49,9 +49,13 @@ function App() {
   };
 
   const handleSpeak = () => {
+    // @ts-ignore
+    console.log(resultText, VOICE_FOR_LANGUAGE[toLanguage]);
     const utterance = new SpeechSynthesisUtterance(resultText);
+    // @ts-ignore
     utterance.lang = VOICE_FOR_LANGUAGE[toLanguage];
     utterance.rate = 0.9;
+    speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   };
 
